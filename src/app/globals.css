@@ -1,26 +1,427 @@
 @import "tailwindcss";
 
+/* ── Design Tokens ─────────────────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dark poker aesthetic palette */
+  --bg-base: #0d0f14;
+  --bg-surface: #161a22;
+  --bg-elevated: #1e2433;
+  --bg-card: #242b3d;
+
+  /* Felt greens */
+  --felt-dark: #0d2a1a;
+  --felt-mid: #0f3621;
+  --felt-light: #124227;
+  --felt-border: #1a5535;
+  --felt-sheen: #16502e;
+
+  /* Accent / gold */
+  --gold: #d4a843;
+  --gold-light: #e8c56a;
+  --gold-dark: #b88c2e;
+
+  /* Text */
+  --text-primary: #f0f4ff;
+  --text-secondary: #8892a4;
+  --text-muted: #5a6478;
+
+  /* Action colors */
+  --color-fold: #c0392b;
+  --color-fold-bg: #2d1015;
+  --color-call: #2980b9;
+  --color-call-bg: #0d1f30;
+  --color-raise: #27ae60;
+  --color-raise-bg: #0d2419;
+  --color-mixed: #8e44ad;
+  --color-mixed-bg: #1e1228;
+
+  /* Seat colors */
+  --seat-hero: #d4a843;
+  --seat-villain: #2a3547;
+  --seat-active: #1e5a38;
+
+  /* Chip colors */
+  --chip-red: #e74c3c;
+  --chip-blue: #3498db;
+  --chip-green: #2ecc71;
+  --chip-black: #2c3e50;
+  --chip-white: #ecf0f1;
+
+  /* Card colors */
+  --card-bg: #faf9f7;
+  --card-red: #dc2626;
+  --card-black: #1a1a2e;
+  --card-border: #d1c9b8;
+  --card-shadow: rgba(0, 0, 0, 0.4);
+
+  /* Shadows & borders */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow-gold: 0 0 20px rgba(212, 168, 67, 0.3);
+  --shadow-glow-green: 0 0 20px rgba(39, 174, 96, 0.2);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Font */
+  --font-display: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Base Reset & Typography ───────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Poker Table ────────────────────────────────────────────────────────────── */
+.poker-table-felt {
+  background:
+    radial-gradient(ellipse at center, var(--felt-sheen) 0%, var(--felt-mid) 40%, var(--felt-dark) 100%);
+  box-shadow:
+    inset 0 0 40px rgba(0, 0, 0, 0.4),
+    inset 0 0 80px rgba(0, 0, 0, 0.2),
+    var(--shadow-md);
+}
+
+.poker-table-rail {
+  background: linear-gradient(135deg, #3d2b1f 0%, #5c4033 30%, #4a3328 60%, #3d2b1f 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.05),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    var(--shadow-lg);
+}
+
+/* ── Playing Cards ──────────────────────────────────────────────────────────── */
+.playing-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  box-shadow:
+    0 4px 12px var(--card-shadow),
+    0 1px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.playing-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.playing-card .suit-red { color: var(--card-red); }
+.playing-card .suit-black { color: var(--card-black); }
+
+/* Card deal animation */
+@keyframes cardDeal {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9) rotate(-5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+.card-deal-animate {
+  animation: cardDeal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Action Badges ──────────────────────────────────────────────────────────── */
+.action-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.action-badge-fold {
+  background: rgba(192, 57, 43, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(192, 57, 43, 0.3);
+}
+
+.action-badge-call {
+  background: rgba(41, 128, 185, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(41, 128, 185, 0.3);
+}
+
+.action-badge-raise {
+  background: rgba(39, 174, 96, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.action-badge-blind {
+  background: rgba(212, 168, 67, 0.15);
+  color: var(--gold);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+}
+
+/* ── Hero Seat ──────────────────────────────────────────────────────────────── */
+.hero-seat {
+  position: relative;
+}
+
+.hero-seat::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  z-index: -1;
+  opacity: 0.6;
+}
+
+/* ── Answer Buttons ────────────────────────────────────────────────────────── */
+.btn-action {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.875rem 2.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-action::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.btn-action:active {
+  transform: scale(0.97);
+}
+
+.btn-fold {
+  background: linear-gradient(135deg, #991b1b, #7f1d1d);
+  color: #fca5a5;
+  box-shadow: 0 4px 15px rgba(153, 27, 27, 0.4);
+}
+
+.btn-fold:hover:not(:disabled) {
+  background: linear-gradient(135deg, #b91c1c, #991b1b);
+  box-shadow: 0 6px 20px rgba(153, 27, 27, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-call {
+  background: linear-gradient(135deg, #1e40af, #1e3a8a);
+  color: #93c5fd;
+  box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
+}
+
+.btn-call:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  box-shadow: 0 6px 20px rgba(30, 64, 175, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-raise {
+  background: linear-gradient(135deg, #065f46, #064e3b);
+  color: #6ee7b7;
+  box-shadow: 0 4px 15px rgba(6, 95, 70, 0.4);
+}
+
+.btn-raise:hover:not(:disabled) {
+  background: linear-gradient(135deg, #047857, #065f46);
+  box-shadow: 0 6px 20px rgba(6, 95, 70, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-action:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Range Matrix ───────────────────────────────────────────────────────────── */
+.range-matrix-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.range-matrix-cell:hover {
+  transform: scale(1.1);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.range-cell-fold { background: rgba(192, 57, 43, 0.15); }
+.range-cell-call { background: rgba(41, 128, 185, 0.25); }
+.range-cell-raise { background: rgba(39, 174, 96, 0.25); }
+.range-cell-mixed { 
+  background: linear-gradient(135deg, rgba(39, 174, 96, 0.3) 0%, rgba(41, 128, 185, 0.3) 50%, rgba(142, 68, 173, 0.3) 100%);
+}
+.range-cell-highlight {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+  z-index: 5;
+}
+
+/* ── Feedback Panel ─────────────────────────────────────────────────────────── */
+@keyframes feedbackSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feedback-panel {
+  animation: feedbackSlide 0.2s ease-out both;
+}
+
+.feedback-correct {
+  background: linear-gradient(135deg, rgba(6, 95, 70, 0.3), rgba(6, 78, 59, 0.2));
+  border: 1px solid rgba(39, 174, 96, 0.4);
+}
+
+.feedback-incorrect {
+  background: linear-gradient(135deg, rgba(153, 27, 27, 0.3), rgba(127, 29, 29, 0.2));
+  border: 1px solid rgba(192, 57, 43, 0.4);
+}
+
+.feedback-mixed {
+  background: linear-gradient(135deg, rgba(67, 56, 202, 0.3), rgba(55, 48, 163, 0.2));
+  border: 1px solid rgba(99, 102, 241, 0.4);
+}
+
+/* ── Glassmorphism ──────────────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ── Utility Animations ─────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 67, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(212, 168, 67, 0); }
+}
+
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+.animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.animate-pulse-gold { animation: pulse-gold 2s ease-in-out infinite; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track { background: var(--bg-surface); }
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--bg-card); }
+
+/* ── Focus Styles (Accessibility) ───────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ── Dealer Button ──────────────────────────────────────────────────────────── */
+.dealer-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f0f0f0, #d0d0d0);
+  border: 2px solid #999;
+  color: #333;
+  font-weight: 900;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+}
+
+/* ── Stat Cards ─────────────────────────────────────────────────────────────── */
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(212, 168, 67, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* ── Nav ────────────────────────────────────────────────────────────────────── */
+.nav-link {
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease, background 0.15s ease;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-link.active {
+  color: var(--gold);
+  background: rgba(212, 168, 67, 0.08);
 }
