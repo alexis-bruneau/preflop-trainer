@@ -4,10 +4,10 @@
  * Abstracted so LocalStatsRepository can be replaced with CloudStatsRepository.
  */
 
-import type { AnswerRecord, SessionState } from '../domain/trainer/session-engine';
-import type { ScenarioType } from '../domain/poker/actions';
-import type { Position } from '../domain/poker/positions';
-import type { HandClass } from '../domain/poker/cards';
+import type { AnswerRecord, SessionState } from '../../domain/trainer/session-engine';
+import type { ScenarioType } from '../../domain/poker/actions';
+import type { Position } from '../../domain/poker/positions';
+import type { HandClass } from '../../domain/poker/cards';
 
 // ─── Training Stats ───────────────────────────────────────────────────────────
 

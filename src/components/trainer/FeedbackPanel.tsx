@@ -62,7 +62,6 @@ export function FeedbackPanel({ result, handClass, showPercentages }: FeedbackPa
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '14px',
           }}
         >
           {statusIcon}

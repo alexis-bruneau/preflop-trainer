@@ -24,7 +24,7 @@ export function ActionBadge({ event, className }: ActionBadgeProps) {
       case 'limp':
         return 'LIMP';
       default:
-        return action.toUpperCase();
+        return String(action).toUpperCase();
     }
   };
 
